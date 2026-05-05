@@ -30,17 +30,30 @@ namespace Coding_Minigames_Project
 
         private void SpawnSlots(LevelData level, Panel gamePanel)
         {
+            bool hasCustomPositions = level.SlotPositions != null &&
+                                      level.SlotPositions.Count == level.ExpectedTags.Count;
+
             int totalWidth = level.ExpectedTags.Count * 180;
             int startX = (gamePanel.Width - totalWidth) / 2;
             int y = (gamePanel.Height / 2) - 40;
 
             for (int i = 0; i < level.ExpectedTags.Count; i++)
             {
-                var slot = new SlotControl(level.ExpectedTags[i])
+                var slot = new SlotControl(level.ExpectedTags[i]);
+
+                if (hasCustomPositions)
                 {
-                    Left = startX + (i * 180),
-                    Top = y
-                };
+                    slot.Left = level.SlotPositions[i].X;
+                    slot.Top = level.SlotPositions[i].Y;
+                }
+                else
+                {
+                    slot.Left = startX + (i * 180);
+                    slot.Top = y;
+                }
+
+                if (level.SlotSizes != null && level.SlotSizes.Count > i)
+                    slot.Size = level.SlotSizes[i];
 
                 slot.OnFilled = CheckWinCondition;
                 slots.Add(slot);
@@ -48,8 +61,12 @@ namespace Coding_Minigames_Project
             }
         }
 
+
         private void SpawnBlocks(LevelData level, Panel gamePanel)
         {
+            bool hasCustomPositions = level.BlockPositions != null &&
+                                      level.BlockPositions.Count == level.AvailableBlocks.Count;
+
             int totalWidth = level.AvailableBlocks.Count * 160;
             int startX = (gamePanel.Width - totalWidth) / 2;
             int y = gamePanel.Height - 100;
@@ -58,10 +75,20 @@ namespace Coding_Minigames_Project
             {
                 var block = new DraggableBlock(level.AvailableBlocks[i]);
 
-                block.SetStartPosition(new Point(
-                    startX + (i * 160),
-                    y
-                ));
+                if (hasCustomPositions)
+                {
+                    block.SetStartPosition(level.BlockPositions[i]);
+                }
+                else
+                {
+                    block.SetStartPosition(new Point(startX + (i * 160), y));
+                }
+
+                if (level.AvailableBlocks[i].ColorOverride.HasValue)
+                    block.BackColor = level.AvailableBlocks[i].ColorOverride.Value;
+
+                if (level.AvailableBlocks[i].SizeOverride.HasValue)
+                    block.Size = level.AvailableBlocks[i].SizeOverride.Value;
 
                 var captured = block;
                 captured.OnReleased = () => HandleBlockReleased(captured);

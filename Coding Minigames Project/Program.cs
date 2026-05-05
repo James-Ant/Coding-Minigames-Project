@@ -14,7 +14,8 @@ namespace Coding_Minigames_Project
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm(ConditionalsLevels.GetLevels()));
+            // Ensure this matches your class name exactly
+            Application.Run(new MainMenu());
         }
     }
 }

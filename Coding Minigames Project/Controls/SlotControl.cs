@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -13,6 +13,7 @@ namespace Coding_Minigames_Project
         public string ExpectedTag { get; set; }
         public bool IsFilled { get; set; } = false;
 
+        public DraggableBlock AcceptedBlock { get; set; }
         public System.Action OnFilled { get; set; }
 
         private Label hintLabel;
@@ -57,6 +58,7 @@ namespace Coding_Minigames_Project
         private void Accept(DraggableBlock block)
         {
             IsFilled = true;
+            AcceptedBlock = block;
             block.IsAccepted = true;
 
             block.Location = new Point(

@@ -1,23 +1,24 @@
-using Coding_Minigames_Project;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Coding_Minigames_Project
 {
-    public class WorldSelectForm : Form
+    public class LevelSelectForm : Form
     {
         private Label headerLabel;
-        private List<Button> worldCards = new List<Button>();
+        private List<Button> levelCards = new List<Button>();
+        private string worldName;
+        private List<LevelData> levels;
 
-        public WorldSelectForm()
+        public LevelSelectForm(string worldName, List<LevelData> levels)
         {
+            this.worldName = worldName;
+            this.levels = levels;
             InitializeForm();
-            CreateWorldButtons();
+            CreateLevelButtons();
+            this.VisibleChanged += (s, e) => { if (this.Visible) RefreshLevelButtons(); };
             this.Resize += (s, e) => UpdateLayout();
             UpdateLayout();
         }
@@ -26,10 +27,10 @@ namespace Coding_Minigames_Project
 
         private void InitializeForm()
         {
-            this.Text = "Select Your World";
+            this.Text = "Select Level";
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.WindowState = FormWindowState.Maximized;
-            this.BackColor = Color.FromArgb(20, 20, 40); 
+            this.BackColor = Color.FromArgb(20, 20, 40);
             this.KeyPreview = true;
             this.KeyDown += (s, e) => {
                 if (e.KeyCode == Keys.F11) ToggleFullscreen();
@@ -51,12 +52,11 @@ namespace Coding_Minigames_Project
             }
         }
 
-
-        private void CreateWorldButtons()
+        private void CreateLevelButtons()
         {
             headerLabel = new Label
             {
-                Text = "Choose a Programming Topic",
+                Text = $"{worldName} Levels",
                 Font = new Font("Segoe UI", 32, FontStyle.Bold),
                 ForeColor = Color.White,
                 AutoSize = false,
@@ -65,13 +65,11 @@ namespace Coding_Minigames_Project
             };
             this.Controls.Add(headerLabel);
 
-            AddWorldCard("VARIABLES", VariableLevels.GetLevels(), Color.FromArgb(46, 204, 113));
-            AddWorldCard("CONDITIONALS", ConditionalsLevels.GetLevels(), Color.FromArgb(52, 152, 219));
-            AddWorldCard("LOOPS", LoopsLevels.GetLevels(), Color.FromArgb(155, 89, 182));
+            RefreshLevelButtons();
 
             Button btnBack = new Button
             {
-                Text = "← Back to Menu",
+                Text = "← Back to Worlds",
                 Size = new Size(150, 40),
                 Location = new Point(20, 45),
                 FlatStyle = FlatStyle.Flat,
@@ -82,51 +80,82 @@ namespace Coding_Minigames_Project
             this.Controls.Add(btnBack);
         }
 
-        private void AddWorldCard(string name, List<LevelData> levels, Color accentColor)
+        private void RefreshLevelButtons()
+        {
+            foreach (var btn in levelCards)
+            {
+                this.Controls.Remove(btn);
+            }
+            levelCards.Clear();
+
+            for (int i = 0; i < levels.Count; i++)
+            {
+                AddLevelCard(i, levels[i]);
+            }
+            UpdateLayout();
+        }
+
+        private void AddLevelCard(int index, LevelData level)
         {
             Button card = new Button
             {
-                Text = name,
-                Size = new Size(250, 320),
+                Text = $"{index + 1}\n{level.LevelName}",
+                Size = new Size(200, 200),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(30, 30, 60),
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
+
+            if (ProgressManager.IsCompleted(worldName, level.LevelName))
+            {
+                card.BackColor = Color.FromArgb(25, 25, 45);
+                card.ForeColor = Color.FromArgb(120, 120, 160);
+                card.Text += "\n(COMPLETED)";
+            }
+
             card.FlatAppearance.BorderSize = 2;
-            card.FlatAppearance.BorderColor = accentColor;
+            card.FlatAppearance.BorderColor = Color.FromArgb(83, 74, 183);
 
             card.Click += (s, e) =>
             {
-                var levelSelect = new LevelSelectForm(name, levels);
-                levelSelect.Show();
+                var game = new MainForm(worldName, levels, index);
+                game.Show();
                 this.Hide();
-                levelSelect.FormClosed += (s2, args) => this.Show();
+                game.FormClosed += (s2, args) => this.Show();
             };
 
-            worldCards.Add(card);
+            levelCards.Add(card);
             this.Controls.Add(card);
         }
 
         private void UpdateLayout()
         {
-            if (headerLabel == null || worldCards.Count == 0) return;
+            if (headerLabel == null || levelCards.Count == 0) return;
 
             int centerX = this.ClientSize.Width / 2;
-            int centerY = this.ClientSize.Height / 2;
-
+            
             headerLabel.Size = new Size(this.ClientSize.Width, 80);
             headerLabel.Location = new Point(0, (int)(this.ClientSize.Height * 0.15));
 
-            int spacing = 40;
-            int totalWidth = (worldCards.Count * worldCards[0].Width) + ((worldCards.Count - 1) * spacing);
+            int spacing = 30;
+            int cardsPerRow = Math.Max(1, (this.ClientSize.Width - spacing) / (levelCards[0].Width + spacing));
+            if (cardsPerRow > levelCards.Count) cardsPerRow = levelCards.Count;
+            
+            int totalWidth = (cardsPerRow * levelCards[0].Width) + ((cardsPerRow - 1) * spacing);
             int startX = centerX - (totalWidth / 2);
             int startY = headerLabel.Bottom + 60;
 
-            for (int i = 0; i < worldCards.Count; i++)
+            for (int i = 0; i < levelCards.Count; i++)
             {
-                worldCards[i].Location = new Point(startX + (i * (worldCards[i].Width + spacing)), startY);
+                int row = i / cardsPerRow;
+                int col = i % cardsPerRow;
+                
+                int x = startX + (col * (levelCards[i].Width + spacing));
+                int y = startY + (row * (levelCards[i].Height + spacing));
+                
+                levelCards[i].Location = new Point(x, y);
             }
         }
 

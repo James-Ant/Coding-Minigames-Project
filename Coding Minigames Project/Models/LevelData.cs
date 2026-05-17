@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -18,6 +18,8 @@ namespace Coding_Minigames_Project
         public List<Point> BlockPositions { get; set; }
         public List<Point> SlotPositions { get; set; }
         public List<Size> SlotSizes { get; set; }
+        public List<string> SlotLabels { get; set; }
+        public Image LevelImage { get; set; }
 
         public LevelData(string levelName, string description = "", string hint = "")
         {
@@ -29,6 +31,7 @@ namespace Coding_Minigames_Project
             BlockPositions = new List<Point>();
             SlotPositions = new List<Point>();
             SlotSizes = new List<Size>();
+            SlotLabels = new List<string>();
         }
     }
 }

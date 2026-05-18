@@ -67,6 +67,21 @@
     </Compile>
     <Compile Include="MiniGames\ConditionalsLevels.cs" />
     <Compile Include="MiniGames\LoopsLevels.cs" />
+    <Compile Include="MiniGames\Maze Escape\MazeDoor.cs" />
+    <Compile Include="MiniGames\Maze Escape\MazeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiniGames\Maze Escape\MazeForm.Designer.cs">
+      <DependentUpon>MazeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MiniGames\Maze Escape\MazeGenerator.cs" />
+    <Compile Include="MiniGames\Maze Escape\MazePlayer.cs" />
+    <Compile Include="MiniGames\Maze Escape\QuestionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MiniGames\Maze Escape\QuestionForm.Designer.cs">
+      <DependentUpon>QuestionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MiniGames\VariableLevels.cs" />
     <Compile Include="Models\BlockCategory.cs" />
     <Compile Include="Models\CodeBlock.cs" />
@@ -108,6 +123,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MiniGames\Maze Escape\questions.txt" />
     <Content Include="Resources\denis-pavlov-music-game-music-puzzle-strategy-arcade-technology-301226.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

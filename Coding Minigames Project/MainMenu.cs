@@ -12,6 +12,7 @@ namespace Coding_Minigames_Project
     {
         private Label titleLabel;
         private Button btnStart;
+        private Button btnMaze;
         private Button btnMusic;
         private Button btnQuit;
 
@@ -86,6 +87,7 @@ namespace Coding_Minigames_Project
         private void CreateButtons()
         {
             btnStart = CreateButton("▶  Play", Color.FromArgb(83, 74, 183));
+            btnMaze = CreateButton("🧩  Maze", Color.FromArgb(180, 50, 255));
             btnMusic = CreateButton(MusicManager.IsMusicEnabled ? "🎵  Music: ON" : "🎵  Music: OFF", Color.FromArgb(40, 120, 80));
             btnQuit = CreateButton("✕  Quit", Color.FromArgb(120, 40, 40));
 
@@ -97,6 +99,17 @@ namespace Coding_Minigames_Project
                 worldSelect.FormClosed += (s2, args) => this.Show();
             };
 
+            btnMaze.Click += (s, e) =>
+            {
+                var maze = new Coding_Minigames_Project.MiniGames.Maze_Escape.MazeForm();
+
+                maze.Show();
+
+                this.Hide();
+
+                maze.FormClosed += (s2, args) => this.Show();
+            };
+
             btnMusic.Click += (s, e) =>
             {
                 MusicManager.ToggleMusic();
@@ -106,6 +119,7 @@ namespace Coding_Minigames_Project
             btnQuit.Click += (s, e) => Application.Exit();
 
             Controls.Add(btnStart);
+            Controls.Add(btnMaze);
             Controls.Add(btnMusic);
             Controls.Add(btnQuit);
         }
@@ -123,7 +137,10 @@ namespace Coding_Minigames_Project
             subtitleLabel.Location = new Point(0, titleLabel.Bottom + 10);
 
             btnStart.Location = new Point(centerX - btnStart.Width / 2, subtitleLabel.Bottom + 60);
-            btnMusic.Location = new Point(centerX - btnMusic.Width / 2, btnStart.Bottom + 20);
+            btnMaze.Location = new Point(centerX - btnMaze.Width / 2, btnStart.Bottom + 20);
+
+            btnMusic.Location = new Point(centerX - btnMusic.Width / 2, btnMaze.Bottom + 20);
+
             btnQuit.Location = new Point(centerX - btnQuit.Width / 2, btnMusic.Bottom + 20);
         }
 

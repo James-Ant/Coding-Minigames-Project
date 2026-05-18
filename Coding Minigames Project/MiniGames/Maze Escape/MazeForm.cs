@@ -22,7 +22,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         MazePlayer player;
 
         Panel gamePanel;
-        Panel sidebarPanel;
+        Panel sidebarPanel; //smh
         Button btnMainMenu;
         Button btnReset;
 

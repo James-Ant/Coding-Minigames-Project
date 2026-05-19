@@ -137,6 +137,7 @@ namespace Coding_Minigames_Project
             subtitleLabel.Location = new Point(0, titleLabel.Bottom + 10);
 
             btnStart.Location = new Point(centerX - btnStart.Width / 2, subtitleLabel.Bottom + 60);
+
             btnMaze.Location = new Point(centerX - btnMaze.Width / 2, btnStart.Bottom + 20);
 
             btnMusic.Location = new Point(centerX - btnMusic.Width / 2, btnMaze.Bottom + 20);

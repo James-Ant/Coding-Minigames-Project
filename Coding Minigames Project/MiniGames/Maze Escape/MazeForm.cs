@@ -9,6 +9,9 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
 {
     public partial class MazeForm : Form
     {
+        // =========================
+        // PROPERTIES & CONFIG
+        // =========================
         int tileSize = 25;
         int rows, cols;
         const int sidebarWidth = 200;
@@ -17,27 +20,36 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         MazeGenerator generator = new MazeGenerator();
         MazePlayer player = new MazePlayer();
 
+        // =========================
+        // UI CONTROLS
+        // =========================
         Panel gamePanel, sidebarPanel;
         Button btnMainMenu, btnReset;
         Label lblInstruction, lblLegend, lblKeys;
         Panel playerPanel;
 
+        // =========================
+        // GAME STATE
+        // =========================
         int finishRow, finishCol, keys = 0;
         const int requiredKeys = 3;
 
         List<(int row, int col, bool solved)> questionDoors = new List<(int row, int col, bool solved)>();
         Random rnd = new Random();
-        Timer moveTimer = new Timer { Interval = 10 };
+        Timer moveTimer = new Timer { Interval = 10 }; // Interpolation loop timer
         int moveSpeed = 5;
 
+        // =========================
+        // CONSTRUCTOR
+        // =========================
         public MazeForm()
         {
             InitializeComponent();
             Text = "Maze Escape";
             WindowState = FormWindowState.Maximized;
             FormBorderStyle = FormBorderStyle.None;
-            KeyPreview = true;
-            DoubleBuffered = true;
+            KeyPreview = true; // Intercept keyboard input before controls
+            DoubleBuffered = true; // Prevents screen flickering
 
             CreateLayout();
 
@@ -127,7 +139,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         // =========================
         void GenerateGame()
         {
-            // Clean up old paint handlers from the previous map before destroying panels
+            // Clean up old paint handlers to prevent memory leaks
             if (tiles != null)
             {
                 for (int r = 0; r < rows; r++)
@@ -166,14 +178,14 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 }
             }
 
-            // PLAYER VISUAL PANEL (Note: BackColor is Transparent so the custom rounded code does the work)
+            // Setup Player Visual Token
             playerPanel = new Panel { Size = new Size(tileSize, tileSize), BackColor = Color.Transparent };
             playerPanel.Paint += PlayerPanel_Paint;
 
             gamePanel.Controls.Add(playerPanel);
             playerPanel.BringToFront();
 
-            // SPAWN TARGETS
+            // Spawn Entities
             SetRandomPlacement(ref player.Row, ref player.Col, Color.Black, isDoor: false, isFinish: false);
             SetRandomPlacement(ref finishRow, ref finishCol, Color.Gold, isDoor: false, isFinish: true);
 
@@ -225,7 +237,9 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
             }
         }
 
-        // Custom stylized painter for a beautiful curved Player tile with an inner white accent border
+        // =========================
+        // GDI+ CUSTOM DRAWING
+        // =========================
         private void PlayerPanel_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -242,13 +256,11 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 path.AddArc(0, playerPanel.Height - diameter - 1, diameter, diameter, 90, 90);
                 path.CloseFigure();
 
-                // Fill player background with Neon Green
                 using (Brush brush = new SolidBrush(Color.Lime))
                 {
                     e.Graphics.FillPath(brush, path);
                 }
 
-                // Add the distinctive white framing ring inside the curves
                 using (Pen pen = new Pen(Color.White, 3) { Alignment = PenAlignment.Inset })
                 {
                     e.Graphics.DrawPath(pen, path);
@@ -266,7 +278,6 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
             }
         }
 
-        // Curved painter for wall tiles and finish line
         private void WallPanel_Paint(object sender, PaintEventArgs e)
         {
             Panel p = (Panel)sender;
@@ -294,7 +305,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         }
 
         // =========================
-        // INPUT
+        // INPUT HANDLERS
         // =========================
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
@@ -318,7 +329,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         }
 
         // =========================
-        // MOVEMENT
+        // MOVEMENT LOOP (10ms)
         // =========================
         void MoveTimer_Tick(object sender, EventArgs e)
         {
@@ -327,6 +338,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
             int dx = player.TargetX - player.PixelX;
             int dy = player.TargetY - player.PixelY;
 
+            // Pixel destination snapping
             if (Math.Abs(dx) < moveSpeed && Math.Abs(dy) < moveSpeed)
             {
                 player.PixelX = player.TargetX;
@@ -346,7 +358,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         }
 
         // =========================
-        // TILE CHECK & EVENTS
+        // GAME RULES & EVALUATION
         // =========================
         void CheckTileEvent()
         {
@@ -377,6 +389,10 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 {
                     keys++;
                     UpdateKeysUI();
+
+                    // Track door state as solved to prevent re-trigger loop
+                    int index = questionDoors.FindIndex(d => d.row == r && d.col == c);
+                    if (index != -1) questionDoors[index] = (r, c, true);
 
                     tiles[r, c].Paint -= DoorPanel_Paint;
                     tiles[r, c].BackColor = Color.Black;

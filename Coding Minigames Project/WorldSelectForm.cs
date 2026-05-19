@@ -68,6 +68,7 @@ namespace Coding_Minigames_Project
             AddWorldCard("VARIABLES", VariableLevels.GetLevels(), Color.FromArgb(46, 204, 113));
             AddWorldCard("CONDITIONALS", ConditionalsLevels.GetLevels(), Color.FromArgb(52, 152, 219));
             AddWorldCard("LOOPS", LoopsLevels.GetLevels(), Color.FromArgb(155, 89, 182));
+            AddWorldCard("SORTING", SortingLevels.GetLevels(), Color.FromArgb(241, 196, 15));
 
             Button btnBack = new Button
             {

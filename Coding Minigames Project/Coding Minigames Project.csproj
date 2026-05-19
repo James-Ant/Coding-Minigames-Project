@@ -67,6 +67,7 @@
     </Compile>
     <Compile Include="MiniGames\ConditionalsLevels.cs" />
     <Compile Include="MiniGames\LoopsLevels.cs" />
+    <Compile Include="MiniGames\SortingLevels.cs" />
     <Compile Include="MiniGames\VariableLevels.cs" />
     <Compile Include="Models\BlockCategory.cs" />
     <Compile Include="Models\CodeBlock.cs" />

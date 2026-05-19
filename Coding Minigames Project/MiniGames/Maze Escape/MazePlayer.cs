@@ -28,8 +28,8 @@ public class MazePlayer
             newCol >= tiles.GetLength(1))
             return false;
 
-        // Wall check (Assuming Color.Cyan represents walls)
-        if (tiles[newRow, newCol].BackColor == Color.Cyan)
+        // Wall check 
+        if (tiles[newRow, newCol].BackColor == Color.FromArgb(83, 74, 183))
             return false;
 
         // Save the destination temporarily instead of updating immediately

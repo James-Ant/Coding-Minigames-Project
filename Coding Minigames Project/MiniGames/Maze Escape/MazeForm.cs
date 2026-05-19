@@ -3,67 +3,44 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace Coding_Minigames_Project.MiniGames.Maze_Escape
 {
     public partial class MazeForm : Form
     {
-        // CONFIG
         int tileSize = 25;
-        int rows;
-        int cols;
-
+        int rows, cols;
         const int sidebarWidth = 200;
 
-        // GAME OBJECTS
         Panel[,] tiles;
-        MazeGenerator generator;
-        MazePlayer player;
+        MazeGenerator generator = new MazeGenerator();
+        MazePlayer player = new MazePlayer();
 
-        Panel gamePanel;
-        Panel sidebarPanel;
-
-        Button btnMainMenu;
-        Button btnReset;
-
-        Label lblInstruction;
-        Label lblLegend;
-        Label lblKeys;
-
+        Panel gamePanel, sidebarPanel;
+        Button btnMainMenu, btnReset;
+        Label lblInstruction, lblLegend, lblKeys;
         Panel playerPanel;
 
-        // FINISH + KEYS
-        int finishRow;
-        int finishCol;
+        int finishRow, finishCol, keys = 0;
+        const int requiredKeys = 3;
 
-        int keys = 0;
-        int requiredKeys = 3;
-
-        List<(int row, int col, bool solved)> questionDoors =
-            new List<(int row, int col, bool solved)>();
-
+        List<(int row, int col, bool solved)> questionDoors = new List<(int row, int col, bool solved)>();
         Random rnd = new Random();
-
-        // SMOOTH MOVEMENT
-        Timer moveTimer = new Timer();
+        Timer moveTimer = new Timer { Interval = 10 };
         int moveSpeed = 5;
 
         public MazeForm()
         {
             InitializeComponent();
-
             Text = "Maze Escape";
             WindowState = FormWindowState.Maximized;
             FormBorderStyle = FormBorderStyle.None;
             KeyPreview = true;
             DoubleBuffered = true;
 
-            generator = new MazeGenerator();
-            player = new MazePlayer();
-
             CreateLayout();
 
-            moveTimer.Interval = 10;
             moveTimer.Tick += MoveTimer_Tick;
             moveTimer.Start();
 
@@ -83,45 +60,36 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 Padding = new Padding(10)
             };
 
-            // INSTRUCTION
             lblInstruction = new Label
             {
-                Text = "Obtain 3 keys by answering question doors to escape the maze.",
+                Text = "Obtain 3 keys by answering question doors to escape the maze. There are hidden doors scattered around.",
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 Width = 170,
-                Height = 80,
+                Height = 100,
                 Top = 20,
                 Left = 10
             };
 
-            // LEGEND
             lblLegend = new Label
             {
-                Text =
-                    "LEGEND:\n\n" +
-                    "🟩 Player\n" +
-                    "🟪 Question Door\n" +
-                    "🟨 Finish",
+                Text = "LEGEND:\n\nGreen - Player\nPink - Question Door\nYellow - Finish",
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 10),
                 AutoSize = true,
-                Top = 110,
+                Top = 140,
                 Left = 10
             };
 
-            // KEYS
             lblKeys = new Label
             {
-                Text = $"Keys: {keys}/{requiredKeys}",
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 AutoSize = true,
-                Top = 250,
+                Top = 260,
                 Left = 10
             };
 
-            // RESET
             btnReset = new Button
             {
                 Text = "⟳ Reset Maze",
@@ -133,14 +101,8 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 Font = new Font("Segoe UI", 10, FontStyle.Bold)
             };
             btnReset.FlatAppearance.BorderSize = 0;
+            btnReset.Click += (s, e) => { player.IsMoving = false; GenerateGame(); };
 
-            btnReset.Click += (s, e) =>
-            {
-                player.IsMoving = false;
-                GenerateGame();
-            };
-
-            // MAIN MENU
             btnMainMenu = new Button
             {
                 Text = "⌂ Main Menu",
@@ -152,37 +114,12 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 Font = new Font("Segoe UI", 10, FontStyle.Bold)
             };
             btnMainMenu.FlatAppearance.BorderSize = 0;
+            btnMainMenu.Click += (s, e) => { CloseFormAndReturn(); };
 
-            btnMainMenu.Click += (s, e) =>
-            {
-                var mainMenu = Application.OpenForms.OfType<MainMenu>().FirstOrDefault();
+            sidebarPanel.Controls.AddRange(new Control[] { lblInstruction, lblLegend, lblKeys, btnReset, btnMainMenu });
 
-                if (mainMenu != null)
-                    mainMenu.Show();
-
-                foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
-                {
-                    if (f != mainMenu && f != this)
-                        f.Hide();
-                }
-
-                Close();
-            };
-
-            sidebarPanel.Controls.Add(lblInstruction);
-            sidebarPanel.Controls.Add(lblLegend);
-            sidebarPanel.Controls.Add(lblKeys);
-            sidebarPanel.Controls.Add(btnReset);
-            sidebarPanel.Controls.Add(btnMainMenu);
-
-            gamePanel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.Black
-            };
-
-            Controls.Add(gamePanel);
-            Controls.Add(sidebarPanel);
+            gamePanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.Black };
+            Controls.AddRange(new Control[] { gamePanel, sidebarPanel });
         }
 
         // =========================
@@ -190,83 +127,170 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         // =========================
         void GenerateGame()
         {
-            gamePanel.Controls.Clear();
-            questionDoors.Clear();
-            keys = 0;
-
-            UpdateKeysUI();
-
-            var area = gamePanel.ClientSize;
-
-            cols = Math.Max(1, area.Width / tileSize);
-            rows = Math.Max(1, area.Height / tileSize);
-
-            tiles = generator.Generate(rows, cols, tileSize, gamePanel);
-
-            // PLAYER
-            playerPanel = new Panel
+            // Clean up old paint handlers from the previous map before destroying panels
+            if (tiles != null)
             {
-                Size = new Size(tileSize, tileSize),
-                BackColor = Color.Lime
-            };
-
-            gamePanel.Controls.Add(playerPanel);
-            playerPanel.BringToFront();
-
-            // SPAWN
-            while (true)
-            {
-                int r = rnd.Next(rows);
-                int c = rnd.Next(cols);
-
-                if (tiles[r, c].BackColor == Color.Black)
+                for (int r = 0; r < rows; r++)
                 {
-                    player.Row = r;
-                    player.Col = c;
-                    break;
-                }
-            }
-
-            // FINISH
-            while (true)
-            {
-                int r = rnd.Next(rows);
-                int c = rnd.Next(cols);
-
-                if (tiles[r, c].BackColor == Color.Black &&
-                    (r != player.Row || c != player.Col))
-                {
-                    finishRow = r;
-                    finishCol = c;
-                    break;
-                }
-            }
-
-            tiles[finishRow, finishCol].BackColor = Color.Gold;
-
-            // QUESTIONS
-            for (int i = 0; i < 3; i++)
-            {
-                while (true)
-                {
-                    int r = rnd.Next(rows);
-                    int c = rnd.Next(cols);
-
-                    if (tiles[r, c].BackColor == Color.Black)
+                    for (int c = 0; c < cols; c++)
                     {
-                        tiles[r, c].BackColor = Color.Magenta;
-                        questionDoors.Add((r, c, false));
-                        break;
+                        if (tiles[r, c] != null)
+                        {
+                            tiles[r, c].Paint -= DoorPanel_Paint;
+                            tiles[r, c].Paint -= WallPanel_Paint;
+                        }
                     }
                 }
             }
 
+            gamePanel.Controls.Clear();
+            questionDoors.Clear();
+            keys = 0;
+            UpdateKeysUI();
+
+            var area = gamePanel.ClientSize;
+            cols = Math.Max(1, area.Width / tileSize);
+            rows = Math.Max(1, area.Height / tileSize);
+            tiles = generator.Generate(rows, cols, tileSize, gamePanel);
+
+            // Hook up curved paint handler to solid wall tiles
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (tiles[r, c].BackColor != Color.Black)
+                    {
+                        tiles[r, c].Paint += WallPanel_Paint;
+                        tiles[r, c].Invalidate();
+                    }
+                }
+            }
+
+            // PLAYER VISUAL PANEL (Note: BackColor is Transparent so the custom rounded code does the work)
+            playerPanel = new Panel { Size = new Size(tileSize, tileSize), BackColor = Color.Transparent };
+            playerPanel.Paint += PlayerPanel_Paint;
+
+            gamePanel.Controls.Add(playerPanel);
+            playerPanel.BringToFront();
+
+            // SPAWN TARGETS
+            SetRandomPlacement(ref player.Row, ref player.Col, Color.Black, isDoor: false, isFinish: false);
+            SetRandomPlacement(ref finishRow, ref finishCol, Color.Gold, isDoor: false, isFinish: true);
+
+            for (int i = 0; i < requiredKeys; i++)
+            {
+                int r = 0, c = 0;
+                SetRandomPlacement(ref r, ref c, Color.Magenta, isDoor: true, isFinish: false);
+                questionDoors.Add((r, c, false));
+            }
+
             player.PixelX = player.Col * tileSize;
             player.PixelY = player.Row * tileSize;
-
             playerPanel.Location = new Point(player.PixelX, player.PixelY);
 
             Focus();
+        }
+
+        void SetRandomPlacement(ref int targetRow, ref int targetCol, Color tileColor, bool isDoor, bool isFinish)
+        {
+            while (true)
+            {
+                int r = rnd.Next(rows);
+                int c = rnd.Next(cols);
+                if (tiles[r, c].BackColor == Color.Black)
+                {
+                    targetRow = r;
+                    targetCol = c;
+
+                    if (isDoor)
+                    {
+                        tiles[r, c].Paint -= WallPanel_Paint;
+                        tiles[r, c].Paint += DoorPanel_Paint;
+                        tiles[r, c].Invalidate();
+                    }
+                    else if (isFinish)
+                    {
+                        tiles[r, c].BackColor = tileColor;
+                        tiles[r, c].Paint += WallPanel_Paint;
+                        tiles[r, c].Invalidate();
+                    }
+                    else
+                    {
+                        tiles[r, c].Paint -= WallPanel_Paint;
+                        tiles[r, c].BackColor = tileColor;
+                        tiles[r, c].Invalidate();
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Custom stylized painter for a beautiful curved Player tile with an inner white accent border
+        private void PlayerPanel_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            int radius = 6;
+            int diameter = radius * 2;
+
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.StartFigure();
+                path.AddArc(0, 0, diameter, diameter, 180, 90);
+                path.AddArc(playerPanel.Width - diameter - 1, 0, diameter, diameter, 270, 90);
+                path.AddArc(playerPanel.Width - diameter - 1, playerPanel.Height - diameter - 1, diameter, diameter, 0, 90);
+                path.AddArc(0, playerPanel.Height - diameter - 1, diameter, diameter, 90, 90);
+                path.CloseFigure();
+
+                // Fill player background with Neon Green
+                using (Brush brush = new SolidBrush(Color.Lime))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+
+                // Add the distinctive white framing ring inside the curves
+                using (Pen pen = new Pen(Color.White, 3) { Alignment = PenAlignment.Inset })
+                {
+                    e.Graphics.DrawPath(pen, path);
+                }
+            }
+        }
+
+        private void DoorPanel_Paint(object sender, PaintEventArgs e)
+        {
+            Panel p = (Panel)sender;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (Brush brush = new SolidBrush(Color.Magenta))
+            {
+                e.Graphics.FillEllipse(brush, 2, 2, p.Width - 5, p.Height - 5);
+            }
+        }
+
+        // Curved painter for wall tiles and finish line
+        private void WallPanel_Paint(object sender, PaintEventArgs e)
+        {
+            Panel p = (Panel)sender;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            int radius = 6;
+            int diameter = radius * 2;
+
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.StartFigure();
+                path.AddArc(0, 0, diameter, diameter, 180, 90);
+                path.AddArc(p.Width - diameter - 1, 0, diameter, diameter, 270, 90);
+                path.AddArc(p.Width - diameter - 1, p.Height - diameter - 1, diameter, diameter, 0, 90);
+                path.AddArc(0, p.Height - diameter - 1, diameter, diameter, 90, 90);
+                path.CloseFigure();
+
+                e.Graphics.Clear(gamePanel.BackColor);
+
+                using (Brush brush = new SolidBrush(p.BackColor))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            }
         }
 
         // =========================
@@ -274,19 +298,23 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         // =========================
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (player.IsMoving)
-                return base.ProcessCmdKey(ref msg, keyData);
+            if (player.IsMoving) return base.ProcessCmdKey(ref msg, keyData);
 
-            int r = player.Row;
-            int c = player.Col;
+            int r = player.Row, c = player.Col;
+            bool handled = false;
 
-            if (keyData == Keys.Up) r--;
-            else if (keyData == Keys.Down) r++;
-            else if (keyData == Keys.Left) c--;
-            else if (keyData == Keys.Right) c++;
+            if (keyData == Keys.Up) { r--; handled = true; }
+            else if (keyData == Keys.Down) { r++; handled = true; }
+            else if (keyData == Keys.Left) { c--; handled = true; }
+            else if (keyData == Keys.Right) { c++; handled = true; }
 
-            player.Move(r, c, tiles, tileSize);
-            return true;
+            if (handled)
+            {
+                player.Move(r, c, tiles, tileSize);
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         // =========================
@@ -303,71 +331,74 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
             {
                 player.PixelX = player.TargetX;
                 player.PixelY = player.TargetY;
-
                 player.Row = player.PendingRow;
                 player.Col = player.PendingCol;
-
                 player.IsMoving = false;
 
                 playerPanel.Location = new Point(player.PixelX, player.PixelY);
-
                 CheckTileEvent();
                 return;
             }
 
-            if (dx != 0)
-                player.PixelX += Math.Sign(dx) * moveSpeed;
-
-            if (dy != 0)
-                player.PixelY += Math.Sign(dy) * moveSpeed;
-
+            player.PixelX += Math.Sign(dx) * moveSpeed;
+            player.PixelY += Math.Sign(dy) * moveSpeed;
             playerPanel.Location = new Point(player.PixelX, player.PixelY);
         }
 
         // =========================
-        // TILE CHECK
+        // TILE CHECK & EVENTS
         // =========================
         void CheckTileEvent()
         {
-            var door = questionDoors.FirstOrDefault(d =>
-                d.row == player.Row &&
-                d.col == player.Col &&
-                !d.solved);
-
-            if (door != default)
-                AskQuestion(door.row, door.col);
+            var door = questionDoors.FirstOrDefault(d => d.row == player.Row && d.col == player.Col && !d.solved);
+            if (door != default) AskQuestion(door.row, door.col);
 
             if (player.Row == finishRow && player.Col == finishCol)
             {
                 if (keys >= requiredKeys)
-                    MessageBox.Show("You Win!");
+                {
+                    MessageBox.Show("You Win! Generating a new maze...");
+                    player.IsMoving = false;
+                    GenerateGame();
+                }
                 else
-                    MessageBox.Show("Need 3 keys!");
+                {
+                    MessageBox.Show($"Need {requiredKeys} keys!");
+                }
             }
         }
 
-        // =========================
-        // QUESTION
-        // =========================
         void AskQuestion(int r, int c)
         {
-            QuestionForm qf = new QuestionForm();
-            qf.ShowDialog();
-
-            if (qf.isCorrect)
+            using (QuestionForm qf = new QuestionForm())
             {
-                keys++;
-                UpdateKeysUI();
+                qf.ShowDialog();
+                if (qf.isCorrect)
+                {
+                    keys++;
+                    UpdateKeysUI();
 
-                tiles[r, c].BackColor = Color.Black;
+                    tiles[r, c].Paint -= DoorPanel_Paint;
+                    tiles[r, c].BackColor = Color.Black;
+                    tiles[r, c].Invalidate();
 
-                MessageBox.Show("Key obtained!");
+                    MessageBox.Show("Key obtained!");
+                }
             }
         }
 
-        void UpdateKeysUI()
+        void UpdateKeysUI() => lblKeys.Text = $"Keys: {keys}/{requiredKeys}";
+
+        void CloseFormAndReturn()
         {
-            lblKeys.Text = $"Keys: {keys}/{requiredKeys}";
+            var mainMenu = Application.OpenForms.OfType<MainMenu>().FirstOrDefault();
+            mainMenu?.Show();
+
+            foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
+            {
+                if (f != mainMenu && f != this) f.Hide();
+            }
+            Close();
         }
     }
 }

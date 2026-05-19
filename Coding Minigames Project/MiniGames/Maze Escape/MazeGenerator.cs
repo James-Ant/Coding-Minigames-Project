@@ -30,7 +30,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                     int chance = rnd.Next(100);
 
                     if (chance < 30)
-                        p.BackColor = Color.Cyan;   // WALL
+                        p.BackColor = Color.FromArgb(83, 74, 183);   // WALL
                     else
                         p.BackColor = Color.Black;  // PATH
 

@@ -18,13 +18,17 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         // GAME OBJECTS
         Panel[,] tiles;
         MazeGenerator generator;
-
         MazePlayer player;
 
         Panel gamePanel;
-        Panel sidebarPanel; //smh
+        Panel sidebarPanel;
+
         Button btnMainMenu;
         Button btnReset;
+
+        Label lblInstruction;
+        Label lblLegend;
+        Label lblKeys;
 
         Panel playerPanel;
 
@@ -48,11 +52,11 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         {
             InitializeComponent();
 
-            this.Text = "Maze Escape";
-            this.WindowState = FormWindowState.Maximized;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.KeyPreview = true;
-            this.DoubleBuffered = true;
+            Text = "Maze Escape";
+            WindowState = FormWindowState.Maximized;
+            FormBorderStyle = FormBorderStyle.None;
+            KeyPreview = true;
+            DoubleBuffered = true;
 
             generator = new MazeGenerator();
             player = new MazePlayer();
@@ -63,11 +67,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
             moveTimer.Tick += MoveTimer_Tick;
             moveTimer.Start();
 
-            // ONLY run GenerateGame here once the form is visible on screen
-            this.Shown += (s, e) =>
-            {
-                GenerateGame();
-            };
+            Shown += (s, e) => GenerateGame();
         }
 
         // =========================
@@ -83,7 +83,64 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 Padding = new Padding(10)
             };
 
-            // 1. MAIN MENU BUTTON (Added first, goes to the very bottom)
+            // INSTRUCTION
+            lblInstruction = new Label
+            {
+                Text = "Obtain 3 keys by answering question doors to escape the maze.",
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Width = 170,
+                Height = 80,
+                Top = 20,
+                Left = 10
+            };
+
+            // LEGEND
+            lblLegend = new Label
+            {
+                Text =
+                    "LEGEND:\n\n" +
+                    "🟩 Player\n" +
+                    "🟪 Question Door\n" +
+                    "🟨 Finish",
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10),
+                AutoSize = true,
+                Top = 110,
+                Left = 10
+            };
+
+            // KEYS
+            lblKeys = new Label
+            {
+                Text = $"Keys: {keys}/{requiredKeys}",
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                AutoSize = true,
+                Top = 250,
+                Left = 10
+            };
+
+            // RESET
+            btnReset = new Button
+            {
+                Text = "⟳ Reset Maze",
+                Dock = DockStyle.Bottom,
+                Height = 45,
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(60, 120, 80),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            btnReset.FlatAppearance.BorderSize = 0;
+
+            btnReset.Click += (s, e) =>
+            {
+                player.IsMoving = false;
+                GenerateGame();
+            };
+
+            // MAIN MENU
             btnMainMenu = new Button
             {
                 Text = "⌂ Main Menu",
@@ -92,51 +149,29 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(120, 60, 60),
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Cursor = Cursors.Hand
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
             };
             btnMainMenu.FlatAppearance.BorderSize = 0;
 
             btnMainMenu.Click += (s, e) =>
             {
                 var mainMenu = Application.OpenForms.OfType<MainMenu>().FirstOrDefault();
+
                 if (mainMenu != null)
                     mainMenu.Show();
 
-                foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
+                foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
                 {
-                    if (form != mainMenu && form != this)
-                        form.Hide();
+                    if (f != mainMenu && f != this)
+                        f.Hide();
                 }
-                this.Close();
+
+                Close();
             };
 
-            // 2. RESET BUTTON (Added second, stacks cleanly ABOVE Main Menu)
-            btnReset = new Button
-            {
-                Text = "⟳ Reset Maze",
-                Dock = DockStyle.Bottom,
-                Height = 45,
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
-                BackColor = Color.FromArgb(60, 120, 80), // Nice green color
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Cursor = Cursors.Hand,
-                Margin = new Padding(0, 0, 0, 10) // Puts a little breathing room between buttons
-            };
-            btnReset.FlatAppearance.BorderSize = 0;
-
-            // The magic click event
-            btnReset.Click += (s, e) =>
-            {
-                // Stop the player movement if they were mid-animation
-                player.IsMoving = false;
-
-                // Wipe everything and rebuild!
-                GenerateGame();
-            };
-
-            // Add them to the sidebar panel
+            sidebarPanel.Controls.Add(lblInstruction);
+            sidebarPanel.Controls.Add(lblLegend);
+            sidebarPanel.Controls.Add(lblKeys);
             sidebarPanel.Controls.Add(btnReset);
             sidebarPanel.Controls.Add(btnMainMenu);
 
@@ -155,10 +190,11 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         // =========================
         void GenerateGame()
         {
-            // FIX #1: Completely clear out any old maze elements 
             gamePanel.Controls.Clear();
             questionDoors.Clear();
             keys = 0;
+
+            UpdateKeysUI();
 
             var area = gamePanel.ClientSize;
 
@@ -167,7 +203,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
 
             tiles = generator.Generate(rows, cols, tileSize, gamePanel);
 
-            // PLAYER PANEL (visual object)
+            // PLAYER
             playerPanel = new Panel
             {
                 Size = new Size(tileSize, tileSize),
@@ -175,11 +211,9 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
             };
 
             gamePanel.Controls.Add(playerPanel);
-
-            // FIX #2: Explicitly force the moving player tile to layer over everything else
             playerPanel.BringToFront();
 
-            // PLAYER SPAWN
+            // SPAWN
             while (true)
             {
                 int r = rnd.Next(rows);
@@ -210,7 +244,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
 
             tiles[finishRow, finishCol].BackColor = Color.Gold;
 
-            // QUESTION TILES
+            // QUESTIONS
             for (int i = 0; i < 3; i++)
             {
                 while (true)
@@ -218,9 +252,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                     int r = rnd.Next(rows);
                     int c = rnd.Next(cols);
 
-                    if (tiles[r, c].BackColor == Color.Black &&
-                        (r != player.Row || c != player.Col) &&
-                        (r != finishRow || c != finishCol))
+                    if (tiles[r, c].BackColor == Color.Black)
                     {
                         tiles[r, c].BackColor = Color.Magenta;
                         questionDoors.Add((r, c, false));
@@ -229,46 +261,36 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 }
             }
 
-            // INIT PLAYER POSITION
             player.PixelX = player.Col * tileSize;
             player.PixelY = player.Row * tileSize;
 
             playerPanel.Location = new Point(player.PixelX, player.PixelY);
 
-            UpdateTitle();
-
-            // FIX #3: Demand keyboard focus right onto the game area
-            gamePanel.Select();
-            gamePanel.Focus();
+            Focus();
         }
 
         // =========================
-        // INPUT HANDLER
+        // INPUT
         // =========================
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (player.IsMoving) return base.ProcessCmdKey(ref msg, keyData);
+            if (player.IsMoving)
+                return base.ProcessCmdKey(ref msg, keyData);
 
-            int newRow = player.Row;
-            int newCol = player.Col;
-            bool handled = false;
+            int r = player.Row;
+            int c = player.Col;
 
-            if (keyData == Keys.Up) { newRow--; handled = true; }
-            else if (keyData == Keys.Down) { newRow++; handled = true; }
-            else if (keyData == Keys.Left) { newCol--; handled = true; }
-            else if (keyData == Keys.Right) { newCol++; handled = true; }
+            if (keyData == Keys.Up) r--;
+            else if (keyData == Keys.Down) r++;
+            else if (keyData == Keys.Left) c--;
+            else if (keyData == Keys.Right) c++;
 
-            if (handled)
-            {
-                player.Move(newRow, newCol, tiles, tileSize);
-                return true;
-            }
-
-            return base.ProcessCmdKey(ref msg, keyData);
+            player.Move(r, c, tiles, tileSize);
+            return true;
         }
 
         // =========================
-        // SMOOTH MOVEMENT
+        // MOVEMENT
         // =========================
         void MoveTimer_Tick(object sender, EventArgs e)
         {
@@ -282,7 +304,6 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 player.PixelX = player.TargetX;
                 player.PixelY = player.TargetY;
 
-                // Sync the logical coordinates upon completion
                 player.Row = player.PendingRow;
                 player.Col = player.PendingCol;
 
@@ -304,7 +325,7 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         }
 
         // =========================
-        // TILE LOGIC
+        // TILE CHECK
         // =========================
         void CheckTileEvent()
         {
@@ -314,16 +335,14 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
                 !d.solved);
 
             if (door != default)
-            {
                 AskQuestion(door.row, door.col);
-            }
 
             if (player.Row == finishRow && player.Col == finishCol)
             {
                 if (keys >= requiredKeys)
                     MessageBox.Show("You Win!");
                 else
-                    MessageBox.Show($"Need {requiredKeys} keys!");
+                    MessageBox.Show("Need 3 keys!");
             }
         }
 
@@ -337,26 +356,18 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
 
             if (qf.isCorrect)
             {
-                for (int i = 0; i < questionDoors.Count; i++)
-                {
-                    if (questionDoors[i].row == r && questionDoors[i].col == c)
-                    {
-                        questionDoors[i] = (r, c, true);
-                        break;
-                    }
-                }
+                keys++;
+                UpdateKeysUI();
 
                 tiles[r, c].BackColor = Color.Black;
-                keys++;
 
-                MessageBox.Show("You got a key!");
-                UpdateTitle();
+                MessageBox.Show("Key obtained!");
             }
         }
 
-        void UpdateTitle()
+        void UpdateKeysUI()
         {
-            this.Text = $"Maze Escape | Keys: {keys}/{requiredKeys}";
+            lblKeys.Text = $"Keys: {keys}/{requiredKeys}";
         }
     }
 }

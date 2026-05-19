@@ -123,7 +123,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="MiniGames\Maze Escape\questions.txt" />
     <Content Include="Resources\denis-pavlov-music-game-music-puzzle-strategy-arcade-technology-301226.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

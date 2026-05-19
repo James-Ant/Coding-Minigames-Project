@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Coding_Minigames_Project.MiniGames.Maze_Escape
 {
     public partial class QuestionForm : Form
     {
-        Label lblQuestion = new Label();
-        TextBox txtAnswer = new TextBox();
-        Button btnSubmit = new Button();
+        Label lblQuestion;
+        Label lblHint;
+        TextBox txtAnswer;
+        Button btnSubmit;
 
-        List<(string question, string answer)> questions = new List<(string question, string answer)>();
+        List<(string question, string answer)> questions =
+            new List<(string question, string answer)>();
+
         Random rnd = new Random();
 
         public bool isCorrect = false;
@@ -21,80 +23,134 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
 
         public QuestionForm()
         {
-            InitializeComponent();
-
+            // FORM SETUP
             this.Text = "Question Door";
-            this.Width = 500;
-            this.Height = 250;
+            this.Size = new Size(500, 300);
             this.StartPosition = FormStartPosition.CenterScreen;
+            this.BackColor = Color.White;
 
+            SetupUI();
             LoadQuestions();
             PickQuestion();
-            SetupUI();
         }
 
+        // ================= UI =================
+        void SetupUI()
+        {
+            lblQuestion = new Label();
+            lblHint = new Label();
+            txtAnswer = new TextBox();
+            btnSubmit = new Button();
+
+            // QUESTION
+            lblQuestion.Top = 20;
+            lblQuestion.Left = 20;
+            lblQuestion.Width = 440;
+            lblQuestion.Height = 60;
+            lblQuestion.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+            lblQuestion.ForeColor = Color.Black;
+
+            // HINT (JUMBLED ANSWER)
+            lblHint.Top = 80;
+            lblHint.Left = 20;
+            lblHint.Width = 440;
+            lblHint.Height = 20;
+            lblHint.Font = new Font("Segoe UI", 10, FontStyle.Italic);
+            lblHint.ForeColor = Color.Gray;
+
+            // ANSWER BOX
+            txtAnswer.Top = 110;
+            txtAnswer.Left = 20;
+            txtAnswer.Width = 440;
+            txtAnswer.Font = new Font("Segoe UI", 11);
+
+            // BUTTON
+            btnSubmit.Text = "Submit";
+            btnSubmit.Top = 160;
+            btnSubmit.Left = 20;
+            btnSubmit.Width = 120;
+            btnSubmit.Height = 35;
+            btnSubmit.BackColor = Color.MediumSlateBlue;
+            btnSubmit.ForeColor = Color.White;
+
+            btnSubmit.Click += BtnSubmit_Click;
+
+            Controls.Add(lblQuestion);
+            Controls.Add(lblHint);
+            Controls.Add(txtAnswer);
+            Controls.Add(btnSubmit);
+        }
+
+        // ================= QUESTIONS =================
         void LoadQuestions()
         {
-            string path = "questions.txt";
+            questions.Add(("What keyword creates a class in C#?", "class"));
+            questions.Add(("What keyword creates an object?", "new"));
+            questions.Add(("What is the main entry method?", "main"));
+            questions.Add(("What symbol ends a statement?", ";"));
+            questions.Add(("What loop runs while condition is true?", "while"));
 
-            if (!File.Exists(path))
-            {
-                MessageBox.Show("questions.txt not found!");
-                return;
-            }
+            questions.Add(("Loop that runs fixed times?", "for"));
+            questions.Add(("Loop that runs at least once?", "do while"));
+            questions.Add(("Keyword to exit loop?", "break"));
+            questions.Add(("Keyword to skip iteration?", "continue"));
+            questions.Add(("Decision keyword?", "if"));
 
-            var lines = File.ReadAllLines(path);
+            questions.Add(("Alternative to if?", "else"));
+            questions.Add(("Equality operator?", "=="));
+            questions.Add(("Not equal operator?", "!="));
+            questions.Add(("Logical AND operator?", "&&"));
+            questions.Add(("Integer type?", "int"));
 
-            foreach (var line in lines)
-            {
-                if (line.Contains("|"))
-                {
-                    var parts = line.Split('|');
+            questions.Add(("Decimal type?", "float"));
+            questions.Add(("Boolean type?", "bool"));
+            questions.Add(("Text type?", "string"));
+            questions.Add(("Character type?", "char"));
+            questions.Add(("Used to return value?", "return"));
 
-                    if (parts.Length == 2)
-                    {
-                        questions.Add((parts[0], parts[1]));
-                    }
-                }
-            }
+            questions.Add(("Access modifier public?", "public"));
+            questions.Add(("Access modifier private?", "private"));
+            questions.Add(("No return method keyword?", "void"));
+            questions.Add(("Self reference keyword?", "this"));
+            questions.Add(("Parent reference keyword?", "base"));
         }
 
+        // ================= PICK QUESTION =================
         void PickQuestion()
         {
             if (questions.Count == 0)
             {
-                MessageBox.Show("No questions loaded!");
+                lblQuestion.Text = "No questions available!";
                 return;
             }
 
             var q = questions[rnd.Next(questions.Count)];
 
             lblQuestion.Text = q.question;
-            currentAnswer = q.answer.Trim().ToLower();
+
+            currentAnswer = q.answer.ToLower();
+
+            lblHint.Text = "Hint: " + Jumble(currentAnswer);
         }
 
-        void SetupUI()
+        // ================= JUMBLE =================
+        string Jumble(string word)
         {
-            lblQuestion.Top = 20;
-            lblQuestion.Left = 20;
-            lblQuestion.Width = 440;
+            char[] chars = word.ToCharArray();
 
-            txtAnswer.Top = 80;
-            txtAnswer.Left = 20;
-            txtAnswer.Width = 440;
+            for (int i = 0; i < chars.Length; i++)
+            {
+                int j = rnd.Next(chars.Length);
 
-            btnSubmit.Text = "Submit";
-            btnSubmit.Top = 130;
-            btnSubmit.Left = 20;
-            btnSubmit.Width = 100;
+                char temp = chars[i];
+                chars[i] = chars[j];
+                chars[j] = temp;
+            }
 
-            btnSubmit.Click += BtnSubmit_Click;
-
-            this.Controls.Add(lblQuestion);
-            this.Controls.Add(txtAnswer);
-            this.Controls.Add(btnSubmit);
+            return new string(chars);
         }
 
+        // ================= SUBMIT =================
         void BtnSubmit_Click(object sender, EventArgs e)
         {
             string userAnswer = txtAnswer.Text.Trim().ToLower();

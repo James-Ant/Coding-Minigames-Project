@@ -1,4 +1,0 @@
-﻿What keyword is used to define a class in C#?|class
-What does OOP stand for?|object oriented programming
-What symbol ends a statement in C#?|;
-What is the base class of all Windows Forms?|Form

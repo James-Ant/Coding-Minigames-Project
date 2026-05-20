@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace Coding_Minigames_Project
 {
+
     public partial class Form1 : Form
     {
         public Form1()

@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Coding_Minigames_Project
 {
+    // MainMenu is the first screen the player sees when the app launches. It extends Form and displays
+    // the game title and three buttons. Play, Music toggle, and Quit.
     public class MainMenu : Form
     {
         private Label titleLabel;
@@ -20,6 +18,7 @@ namespace Coding_Minigames_Project
             InitializeForm();
             CreateTitle();
             CreateButtons();
+
             this.Resize += (s, e) => UpdateLayout();
             UpdateLayout();
 
@@ -57,6 +56,7 @@ namespace Coding_Minigames_Project
         }
 
         private Label subtitleLabel;
+
         private void CreateTitle()
         {
             titleLabel = new Label

@@ -1,14 +1,15 @@
-using Coding_Minigames_Project;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Coding_Minigames_Project
 {
+    // GameLevelManager is the core engine of the drag-and-drop puzzle game.
+    // It manages loading levels, creating UI elements laying them out on a panel,
+    // handling drag-and-drop logic, and checking win conditions.
+ 
     public class GameLevelManager
     {
         private LevelData currentLevel;
@@ -16,6 +17,7 @@ namespace Coding_Minigames_Project
         private List<DraggableBlock> blocks = new List<DraggableBlock>();
         private List<Label> slotLabels = new List<Label>();
         private PictureBox levelPictureBox;
+        private Panel levelDescPanel;
 
         public Action OnLevelComplete { get; set; }
 
@@ -26,8 +28,11 @@ namespace Coding_Minigames_Project
             blocks.Clear();
             slotLabels.Clear();
             gamePanel.Controls.Clear();
+            levelDescPanel = null;
 
-            SpawnImage(level, gamePanel);
+            // Spawn the description panel textbox first inside the level itself
+            SpawnDescriptionPanel(level, gamePanel);
+
             SpawnSlots(level, gamePanel);
             SpawnBlocks(level, gamePanel);
             Relayout(gamePanel);
@@ -36,6 +41,13 @@ namespace Coding_Minigames_Project
         public void Relayout(Panel gamePanel)
         {
             if (currentLevel == null) return;
+
+            if (levelDescPanel != null)
+            {
+                levelDescPanel.Width = Math.Min(800, gamePanel.Width - 40);
+                levelDescPanel.Left = (gamePanel.Width - levelDescPanel.Width) / 2;
+                levelDescPanel.Top = 15;
+            }
 
             UpdateSlotPositions(gamePanel);
             UpdateBlockPositions(gamePanel);
@@ -46,8 +58,12 @@ namespace Coding_Minigames_Project
             bool hasCustomPositions = currentLevel.SlotPositions != null &&
                                       currentLevel.SlotPositions.Count == currentLevel.ExpectedTags.Count;
 
-            int spacing = 30; // standard spacing between slots
-            int y = (gamePanel.Height / 2) - 40;
+            int topBoundary = (levelDescPanel != null) ? (levelDescPanel.Top + levelDescPanel.Height + 15) : 15;
+            int remainingHeight = gamePanel.Height - topBoundary;
+            int spacing = 30;
+
+            int slotHeight = (slots.Count > 0) ? slots[0].Height : 80;
+            int y = topBoundary + (remainingHeight / 2) - (slotHeight / 2);
 
             if (levelPictureBox != null)
             {
@@ -72,7 +88,6 @@ namespace Coding_Minigames_Project
             }
             else
             {
-                // Calculate total width of all elements
                 int totalWidth = 0;
                 for (int i = 0; i < slots.Count; i++)
                 {
@@ -86,8 +101,8 @@ namespace Coding_Minigames_Project
 
                 if (stackVertically)
                 {
-                    int totalHeight = (slots.Count * slots[0].Height) + ((slots.Count - 1) * spacing);
-                    int startY = (gamePanel.Height - totalHeight) / 2;
+                    int totalHeight = (slots.Count * slotHeight) + ((slots.Count - 1) * spacing);
+                    int startY = topBoundary + (remainingHeight - totalHeight) / 2;
 
                     for (int i = 0; i < slots.Count; i++)
                     {
@@ -135,6 +150,52 @@ namespace Coding_Minigames_Project
             }
         }
 
+        private void SpawnDescriptionPanel(LevelData level, Panel gamePanel)
+        {
+            if (string.IsNullOrEmpty(level.LevelName) && string.IsNullOrEmpty(level.Description))
+                return;
+
+            levelDescPanel = new Panel
+            {
+                BackColor = Color.FromArgb(38, 38, 48),
+                Padding = new Padding(15, 10, 15, 10),
+                Height = 110
+            };
+
+            levelDescPanel.Paint += (s, e) => {
+                using (var pen = new Pen(Color.FromArgb(70, 70, 95), 2))
+                {
+                    e.Graphics.DrawRectangle(pen, 0, 0, levelDescPanel.Width - 1, levelDescPanel.Height - 1);
+                }
+            };
+
+            Label titleLabel = new Label
+            {
+                Text = level.LevelName,
+                Font = new Font("Segoe UI", 13F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(52, 152, 219),
+                Dock = DockStyle.Top,
+                Height = 28,
+                BackColor = Color.Transparent
+            };
+
+            Label descLabel = new Label
+            {
+                Text = level.Description,
+                Font = new Font("Segoe UI", 11F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(220, 220, 220),
+                BackColor = Color.Transparent,
+                Dock = DockStyle.Fill,
+                AutoSize = false
+            };
+
+            levelDescPanel.Controls.Add(descLabel);
+            levelDescPanel.Controls.Add(titleLabel);
+
+            gamePanel.Controls.Add(levelDescPanel);
+            levelDescPanel.BringToFront();
+        }
+
         private void UpdateBlockPositions(Panel gamePanel)
         {
             bool hasCustomPositions = currentLevel.BlockPositions != null &&
@@ -142,7 +203,7 @@ namespace Coding_Minigames_Project
 
             int totalWidth = currentLevel.AvailableBlocks.Count * 160;
             int startX = (gamePanel.Width - totalWidth) / 2;
-            int y = gamePanel.Height - 120; // Adjusted for padding
+            int y = gamePanel.Height - 120;
 
             for (int i = 0; i < blocks.Count; i++)
             {
@@ -167,32 +228,12 @@ namespace Coding_Minigames_Project
                 }
                 else
                 {
-                    // If it is accepted, snap it to its current slot (which might have moved)
                     SlotControl currentSlot = slots.FirstOrDefault(s => s.AcceptedBlock == block);
                     if (currentSlot != null)
                     {
                         SnapBlockToSlot(block, currentSlot);
                     }
                 }
-            }
-        }
-
-        private void SpawnImage(LevelData level, Panel gamePanel)
-        {
-            if (level.LevelImage != null)
-            {
-                levelPictureBox = new PictureBox
-                {
-                    Image = level.LevelImage,
-                    SizeMode = PictureBoxSizeMode.Zoom,
-                    Size = new Size(300, 200),
-                    BackColor = Color.Transparent
-                };
-                gamePanel.Controls.Add(levelPictureBox);
-            }
-            else
-            {
-                levelPictureBox = null;
             }
         }
 
@@ -229,7 +270,6 @@ namespace Coding_Minigames_Project
                 gamePanel.Controls.Add(slot);
             }
         }
-
 
         private void SpawnBlocks(LevelData level, Panel gamePanel)
         {
@@ -295,7 +335,6 @@ namespace Coding_Minigames_Project
 
         private void SnapBlockToSlot(DraggableBlock block, SlotControl slot)
         {
-            // calculate exact center of slot then offset by half block size
             int snapX = slot.Left + (slot.Width - block.Width) / 2;
             int snapY = slot.Top + (slot.Height - block.Height) / 2;
 

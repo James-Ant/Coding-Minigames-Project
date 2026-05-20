@@ -1,14 +1,14 @@
-using Coding_Minigames_Project;
+using Coding_Minigames_Project.MiniGames.Maze_Escape;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Coding_Minigames_Project
 {
+    // WorldSelectForm is the topic/world selection screen where the player picks a programming topic
+    // to practice. It extends Form and displays card buttons for each topic.
+    // Variables ,Conditionals, Loops, Sorting, and a special Maze Escape standalone game.
     public class WorldSelectForm : Form
     {
         private Label headerLabel;
@@ -29,7 +29,7 @@ namespace Coding_Minigames_Project
             this.Text = "Select Your World";
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.WindowState = FormWindowState.Maximized;
-            this.BackColor = Color.FromArgb(20, 20, 40); 
+            this.BackColor = Color.FromArgb(20, 20, 40);
             this.KeyPreview = true;
             this.KeyDown += (s, e) => {
                 if (e.KeyCode == Keys.F11) ToggleFullscreen();
@@ -51,7 +51,6 @@ namespace Coding_Minigames_Project
             }
         }
 
-
         private void CreateWorldButtons()
         {
             headerLabel = new Label
@@ -69,6 +68,28 @@ namespace Coding_Minigames_Project
             AddWorldCard("CONDITIONALS", ConditionalsLevels.GetLevels(), Color.FromArgb(52, 152, 219));
             AddWorldCard("LOOPS", LoopsLevels.GetLevels(), Color.FromArgb(155, 89, 182));
             AddWorldCard("SORTING", SortingLevels.GetLevels(), Color.FromArgb(241, 196, 15));
+
+            Button mazeCard = new Button
+            {
+                Text = "MAZE ESCAPE",
+                Size = new Size(250, 320),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(30, 30, 60),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            mazeCard.FlatAppearance.BorderSize = 2;
+            mazeCard.FlatAppearance.BorderColor = Color.FromArgb(231, 76, 60);
+            mazeCard.Click += (s, e) =>
+            {
+                var maze = new MazeForm();
+                maze.Show();
+                this.Hide();
+                maze.FormClosed += (s2, args) => this.Show();
+            };
+            worldCards.Add(mazeCard);
+            this.Controls.Add(mazeCard);
 
             Button btnBack = new Button
             {
@@ -131,6 +152,16 @@ namespace Coding_Minigames_Project
             }
         }
 
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // WorldSelectForm
+            // 
+            this.ClientSize = new System.Drawing.Size(1411, 646);
+            this.Name = "WorldSelectForm";
+            this.ResumeLayout(false);
 
+        }
     }
 }

@@ -5,6 +5,7 @@ using System.Windows.Forms;
 
 namespace Coding_Minigames_Project
 {
+    // LevelSelectForm shows a grid of level buttons for a single programming topic
     public class LevelSelectForm : Form
     {
         private Label headerLabel;
@@ -18,6 +19,7 @@ namespace Coding_Minigames_Project
             this.levels = levels;
             InitializeForm();
             CreateLevelButtons();
+
             this.VisibleChanged += (s, e) => { if (this.Visible) RefreshLevelButtons(); };
             this.Resize += (s, e) => UpdateLayout();
             UpdateLayout();
@@ -140,6 +142,7 @@ namespace Coding_Minigames_Project
             headerLabel.Location = new Point(0, (int)(this.ClientSize.Height * 0.15));
 
             int spacing = 30;
+
             int cardsPerRow = Math.Max(1, (this.ClientSize.Width - spacing) / (levelCards[0].Width + spacing));
             if (cardsPerRow > levelCards.Count) cardsPerRow = levelCards.Count;
             

@@ -5,13 +5,16 @@ using System.IO;
 
 namespace Coding_Minigames_Project
 {
+    // MusicManager is a static class that handles background music playback for the game
     public static class MusicManager
     {
         [DllImport("winmm.dll")]
         private static extern long mciSendString(string command, StringBuilder returnValue, int returnLength, IntPtr winHandle);
 
         public static bool IsMusicEnabled { get; set; } = true;
+
         private static bool isPlaying = false;
+
         private static string currentFile;
 
         public static void Play(string fileName)

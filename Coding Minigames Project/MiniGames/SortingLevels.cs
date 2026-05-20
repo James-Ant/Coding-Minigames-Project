@@ -1,15 +1,18 @@
-using System;
 using System.Collections.Generic;
 
 namespace Coding_Minigames_Project
 {
+    // SortingLevels is a static class that defines all 8 puzzle levels for the "Sorting" minigame topic.
+    // These are more advanced levels where each item has multiple attribute and the player must sort
+    // them into the correct condition-based slots.
+    // Each level is a LevelData with a title, description, hint, slot labels showing the conditions,
+    // available CodeBlock answer blocks with multi-line display text describing item attributes
     public static class SortingLevels
     {
         public static List<LevelData> GetLevels()
         {
             var levels = new List<LevelData>();
 
-            // Level 1: Shipping Packages (Weight and Fragility)
             var level1 = new LevelData("Shipping Sorter", "Sort the packages based on their exact attributes.", "Match the item properties to the condition.");
             level1.SlotLabels.Add("weight > 10 =");
             level1.SlotLabels.Add("fragile == true =");
@@ -30,7 +33,6 @@ namespace Coding_Minigames_Project
             level1.ExpectedTags.Add("ans-normal");
             levels.Add(level1);
 
-            // Level 2: User Access (Age and Subscription)
             var level2 = new LevelData("Access Control", "Grant the correct access level by evaluating conditions.", "Check both age and subscription status.");
             level2.SlotLabels.Add("age < 13 =");
             level2.SlotLabels.Add("sub == \"Pro\" =");
@@ -51,7 +53,6 @@ namespace Coding_Minigames_Project
             level2.ExpectedTags.Add("ans-free");
             levels.Add(level2);
 
-            // Level 3: Temperature Control (Temp)
             var level3 = new LevelData("Matter State", "Sort these H2O samples by their physical state conditions.", "Water freezes at 0 and boils at 100.");
             level3.SlotLabels.Add("temp <= 0 =");
             level3.SlotLabels.Add("temp >= 100 =");
@@ -72,7 +73,6 @@ namespace Coding_Minigames_Project
             level3.ExpectedTags.Add("ans-liquid");
             levels.Add(level3);
 
-            // Level 4: Network Packets (Port, Protocol)
             var level4 = new LevelData("Firewall Router", "Route the incoming network packets.", "Look at both the port and the protocol.");
             level4.SlotLabels.Add("port == 443 =");
             level4.SlotLabels.Add("proto == \"UDP\" =");
@@ -93,7 +93,6 @@ namespace Coding_Minigames_Project
             level4.ExpectedTags.Add("ans-drop");
             levels.Add(level4);
 
-            // Level 5: File System (Extension and Size)
             var level5 = new LevelData("File System", "Sort files into correct directories.", "Check file extension and size in MB.");
             level5.SlotLabels.Add("ext == \".exe\" =");
             level5.SlotLabels.Add("size > 1000 =");
@@ -114,7 +113,6 @@ namespace Coding_Minigames_Project
             level5.ExpectedTags.Add("ans-text");
             levels.Add(level5);
 
-            // Level 6: E-commerce Orders (Price and Prime)
             var level6 = new LevelData("E-commerce Orders", "Sort customer orders based on price and subscription.", "Pay attention to compound conditions.");
             level6.SlotLabels.Add("price > 1000 =");
             level6.SlotLabels.Add("prime == true && price < 20 =");
@@ -135,7 +133,6 @@ namespace Coding_Minigames_Project
             level6.ExpectedTags.Add("ans-cheap-noprime");
             levels.Add(level6);
 
-            // Level 7: RPG Inventory (Type and Rarity)
             var level7 = new LevelData("RPG Inventory", "Organize your loot by type and rarity.", "Match the exact string values.");
             level7.SlotLabels.Add("type == \"Weapon\" && rarity == \"Epic\" =");
             level7.SlotLabels.Add("type == \"Potion\" =");
@@ -156,7 +153,6 @@ namespace Coding_Minigames_Project
             level7.ExpectedTags.Add("ans-legendary");
             levels.Add(level7);
 
-            // Level 8: Smart Home (Device and Status)
             var level8 = new LevelData("Smart Home", "Route commands to the appropriate devices.", "Check the device type and its current status.");
             level8.SlotLabels.Add("device == \"Light\" && status == \"On\" =");
             level8.SlotLabels.Add("device == \"Thermostat\" =");

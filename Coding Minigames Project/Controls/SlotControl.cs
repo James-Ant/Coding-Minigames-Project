@@ -1,19 +1,21 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Coding_Minigames_Project
 {
+    // SlotControl is a drop target panel where the player drops a DraggableBlock to answer a puzzle.
+    // It extends Panel and each slot has a tag that defines the correct answer.
+    // When a block is dropped, its Tag is compared against ExpectedTag. 
+    // If the tag matches then the block is accepted and the level ends
     public class SlotControl : Panel
     {
         public string ExpectedTag { get; set; }
+
         public bool IsFilled { get; set; } = false;
 
         public DraggableBlock AcceptedBlock { get; set; }
+
         public System.Action OnFilled { get; set; }
 
         private Label hintLabel;
@@ -22,16 +24,16 @@ namespace Coding_Minigames_Project
         {
             ExpectedTag = expectedTag;
 
-            Size = new Size(160, 80);
-            BackColor = Color.FromArgb(40, 40, 40);
-            BorderStyle = BorderStyle.FixedSingle;
+            Size = new Size(160, 80);                          
+            BackColor = Color.FromArgb(40, 40, 40);            
+            BorderStyle = BorderStyle.FixedSingle;              
 
             hintLabel = new Label
             {
                 Text = "Drop here",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,
-                ForeColor = Color.FromArgb(120, 120, 120),
+                ForeColor = Color.FromArgb(120, 120, 120),     
                 BackColor = Color.Transparent,
                 Font = new Font("Segoe UI", 10)
             };

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Coding_Minigames_Project
 {
+    // BlockCategory is an enumeration that defines the types of code blocks used in the game.
     public enum BlockCategory
     {
         Variable,

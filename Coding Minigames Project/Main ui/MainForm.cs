@@ -1,14 +1,14 @@
-using Coding_Minigames_Project;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Coding_Minigames_Project
 {
+    // MainForm is the main gameplay screen where the player solves coding puzzles by dragging blocks
+    // into slots. It extends Form and receives a world name, list of levels, and a starting level index.
+    // The form has a left sidebar containing a Show Hint ,a Level Select, and a Main Menu. 
     public class MainForm : Form
     {
         private Panel gamePanel;
@@ -38,19 +38,18 @@ namespace Coding_Minigames_Project
             KeyDown += (s, e) => {
                 if (e.KeyCode == Keys.F11) ToggleFullscreen();
             };
+
             this.Resize += (s, e) => {
                 if (levelManager != null && gamePanel != null)
                     levelManager.Relayout(gamePanel);
             };
 
-            // game panel
             gamePanel = new Panel
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(30, 30, 30)
             };
 
-            // sidebar panel
             Panel sidebarPanel = new Panel
             {
                 Dock = DockStyle.Left,
@@ -138,7 +137,6 @@ namespace Coding_Minigames_Project
             Controls.Add(gamePanel);
             Controls.Add(sidebarPanel);
             
-            // Add a hint button to the game panel or handle it via shortcut
             this.KeyDown += (s, e) => {
                 if (e.KeyCode == Keys.H) btnHint.PerformClick();
             };
@@ -172,9 +170,9 @@ namespace Coding_Minigames_Project
 
             var level = worldLevels[currentLevelIndex];
 
-            Text = level.Description != ""
-                ? $"Coding Minigames — {level.LevelName}: {level.Description}"
-                : $"Coding Minigames — {level.LevelName}";
+            Text = $"Coding Minigames — {level.LevelName}";
+
+
 
             hintLabel.Text = level.Hint;
             hintLabel.Visible = false;
@@ -210,7 +208,6 @@ namespace Coding_Minigames_Project
             };
             overlay.Location = new Point((gamePanel.Width - overlay.Width) / 2, (gamePanel.Height - overlay.Height) / 2);
             
-            // Add a subtle border effect manually or use a padded panel.
             overlay.Padding = new Padding(2);
             overlay.Paint += (s, e) => {
                 ControlPaint.DrawBorder(e.Graphics, overlay.ClientRectangle, Color.FromArgb(52, 152, 219), ButtonBorderStyle.Solid);
@@ -220,7 +217,7 @@ namespace Coding_Minigames_Project
             {
                 Text = "LEVEL COMPLETE!",
                 Font = new Font("Segoe UI", 26, FontStyle.Bold),
-                ForeColor = Color.FromArgb(46, 204, 113), // Success green
+                ForeColor = Color.FromArgb(46, 204, 113),
                 Dock = DockStyle.Top,
                 TextAlign = ContentAlignment.BottomCenter,
                 Height = 90
@@ -281,7 +278,7 @@ namespace Coding_Minigames_Project
             {
                 Text = "WORLD CLEARED!",
                 Font = new Font("Segoe UI", 26, FontStyle.Bold),
-                ForeColor = Color.FromArgb(241, 196, 15), // Gold
+                ForeColor = Color.FromArgb(241, 196, 15),
                 Dock = DockStyle.Top,
                 TextAlign = ContentAlignment.BottomCenter,
                 Height = 90

@@ -30,26 +30,9 @@ namespace Coding_Minigames_Project
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.WindowState = FormWindowState.Maximized;
             this.BackColor = Color.FromArgb(20, 20, 40);
-            this.KeyPreview = true;
-            this.KeyDown += (s, e) => {
-                if (e.KeyCode == Keys.F11) ToggleFullscreen();
-            };
         }
 
-        private void ToggleFullscreen()
-        {
-            if (this.WindowState == FormWindowState.Maximized)
-            {
-                this.WindowState = FormWindowState.Normal;
-                this.FormBorderStyle = FormBorderStyle.Sizable;
-                this.Size = new Size(900, 600);
-            }
-            else
-            {
-                this.FormBorderStyle = FormBorderStyle.None;
-                this.WindowState = FormWindowState.Maximized;
-            }
-        }
+
 
         private void CreateWorldButtons()
         {

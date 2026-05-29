@@ -27,7 +27,6 @@ namespace Coding_Minigames_Project
 
         public List<string> SlotLabels { get; set; }
 
-        public Image LevelImage { get; set; }
 
         public LevelData(string levelName, string description = "", string hint = "")
         {

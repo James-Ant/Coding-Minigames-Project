@@ -340,11 +340,9 @@ namespace Coding_Minigames_Project.MiniGames.Maze_Escape
         {
             var mainMenu = Application.OpenForms.OfType<MainMenu>().FirstOrDefault();
             mainMenu?.Show();
-
-            foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
-                if (f != mainMenu && f != this) f.Hide();
-
             Close();
+            foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
+                if (f != mainMenu) f.Close();
         }
     }
 }

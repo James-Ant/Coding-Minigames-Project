@@ -16,7 +16,7 @@ namespace Coding_Minigames_Project
         private List<SlotControl> slots = new List<SlotControl>();
         private List<DraggableBlock> blocks = new List<DraggableBlock>();
         private List<Label> slotLabels = new List<Label>();
-        private PictureBox levelPictureBox;
+
         private Panel levelDescPanel;
 
         public Action OnLevelComplete { get; set; }
@@ -65,10 +65,7 @@ namespace Coding_Minigames_Project
             int slotHeight = (slots.Count > 0) ? slots[0].Height : 80;
             int y = topBoundary + (remainingHeight / 2) - (slotHeight / 2);
 
-            if (levelPictureBox != null)
-            {
-                levelPictureBox.Location = new Point((gamePanel.Width - levelPictureBox.Width) / 2, y - levelPictureBox.Height - 40);
-            }
+
 
             if (hasCustomPositions)
             {

@@ -44,9 +44,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WindowsInput, Version=1.0.4.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
-      <HintPath>..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
-    </Reference>
+
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\DraggableBlock.cs">
@@ -55,12 +53,7 @@
     <Compile Include="Controls\SlotControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
+
     <Compile Include="LevelManager\GameLevelManager.cs" />
     <Compile Include="MainMenu.cs">
       <SubType>Form</SubType>

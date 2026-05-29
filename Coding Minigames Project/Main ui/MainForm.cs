@@ -34,10 +34,7 @@ namespace Coding_Minigames_Project
             FormBorderStyle = FormBorderStyle.Sizable;
             WindowState = FormWindowState.Maximized;
             BackColor = Color.FromArgb(30, 30, 30);
-            KeyPreview = true;
-            KeyDown += (s, e) => {
-                if (e.KeyCode == Keys.F11) ToggleFullscreen();
-            };
+
 
             this.Resize += (s, e) => {
                 if (levelManager != null && gamePanel != null)
@@ -73,11 +70,11 @@ namespace Coding_Minigames_Project
             btnMainMenu.Click += (s, e) => {
                 var mainMenu = Application.OpenForms.OfType<MainMenu>().FirstOrDefault();
                 if (mainMenu != null) mainMenu.Show();
+                this.Close();
                 foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
                 {
-                    if (form != mainMenu && form != this) form.Hide();
+                    if (form != mainMenu) form.Close();
                 }
-                this.Close();
             };
 
             Panel spacerPanel = new Panel { Dock = DockStyle.Bottom, Height = 10 };
@@ -137,28 +134,13 @@ namespace Coding_Minigames_Project
             Controls.Add(gamePanel);
             Controls.Add(sidebarPanel);
             
-            this.KeyDown += (s, e) => {
-                if (e.KeyCode == Keys.H) btnHint.PerformClick();
-            };
+
 
             levelManager = new GameLevelManager();
             levelManager.OnLevelComplete = OnLevelComplete;
         }
 
-        private void ToggleFullscreen()
-        {
-            if (this.WindowState == FormWindowState.Maximized)
-            {
-                this.WindowState = FormWindowState.Normal;
-                this.FormBorderStyle = FormBorderStyle.Sizable;
-                this.Size = new Size(1000, 700);
-            }
-            else
-            {
-                this.FormBorderStyle = FormBorderStyle.None;
-                this.WindowState = FormWindowState.Maximized;
-            }
-        }
+
 
         private void LoadCurrentLevel()
         {
